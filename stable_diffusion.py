@@ -2,7 +2,6 @@ import json
 
 from base64 import b64decode
 from io import BytesIO
-from logging import getLogger, INFO
 from urllib.parse import urljoin
 
 import requests
@@ -19,6 +18,7 @@ class StableDiffusion:
         endpoint = "/queue/status"
         url = urljoin(self.base_url, endpoint)
         params = {}
+
         req = requests.get(url, headers=self.headers, params=params)
         return json.loads(req.text)
 
@@ -30,6 +30,7 @@ class StableDiffusion:
             "negative_prompt": negative_prompt,
             "steps": steps,
         }
+
         req = requests.post(url, json=params)
         return json.loads(req.text)
 
@@ -37,14 +38,12 @@ class StableDiffusion:
         endpoint = "/sdapi/v1/png-info"
         url = urljoin(self.base_url, endpoint)
         params = {"image": f"data:image/png;base64,{image}"}
+
         req = requests.post(url, json=params)
         return json.loads(req.text)
 
 
 if __name__ == "__main__":
-    logger = getLogger(__name__)
-    logger.setLevel(INFO)
-
     sd = StableDiffusion()
     prompt = input("prompt:")
 
