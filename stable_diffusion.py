@@ -2,6 +2,7 @@ import json
 
 from base64 import b64decode
 from io import BytesIO
+from logging import getLogger, INFO
 from urllib.parse import urljoin
 
 import requests
@@ -41,8 +42,12 @@ class StableDiffusion:
 
 
 if __name__ == "__main__":
+    logger = getLogger(__name__)
+    logger.setLevel(INFO)
+
     sd = StableDiffusion()
-    prompt = input()
+    prompt = input("prompt:")
+
     for img in sd.txt2img(prompt)["images"]:
         image = Image.open(BytesIO(b64decode(img)))
         pnginfo = PngImagePlugin.PngInfo()
