@@ -6,7 +6,6 @@ import requests
 class SDWebAPIHandler:
     def __init__(self):
         self.base_url = "http://127.0.0.1:7860/"
-        self.headers = {"Content-type": "application/json"}
 
     def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
