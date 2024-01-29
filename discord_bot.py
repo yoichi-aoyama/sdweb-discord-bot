@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from base64 import b64decode
 from io import BytesIO
 
@@ -22,13 +25,20 @@ async def on_ready():
 
 
 @bot.command()
-async def imagine(ctx, *args):
+async def t2i(ctx, *args):
+    generated_images = []
     prompt = "".join(args)
     for img in sd.txt2img(prompt)["images"]:
         image = Image.open(BytesIO(b64decode(img)))
         pnginfo = PngImagePlugin.PngInfo()
         pnginfo.add_text("parameters", sd.png_info(img).get("info"))
-        image.save("output.png", pnginfo=pnginfo)
-    with open("output.png", "rb") as f:
-        image = discord.File(f)
-        await ctx.send(f"Generate: {prompt}", file=image)
+        tmp_filename = f"{uuid.uuid4()}.png"
+        generated_images.append(tmp_filename)
+        image.save(tmp_filename, pnginfo=pnginfo)
+
+    payload = []
+    for img in generated_images:
+        with open(img, "rb") as f:
+            payload.append(discord.File(f))
+        os.remove(img)
+    await ctx.send(f"Generate: {prompt}", files=payload)
