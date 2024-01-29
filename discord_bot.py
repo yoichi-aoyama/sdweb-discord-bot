@@ -25,9 +25,9 @@ async def on_ready():
 
 
 @bot.command()
-async def t2i(ctx, *args):
+async def t2i(ctx, *, arg):
     generated_images = []
-    prompt = "".join(args)
+    prompt = arg
     for img in sd.txt2img(prompt)["images"]:
         image = Image.open(BytesIO(b64decode(img)))
         pnginfo = PngImagePlugin.PngInfo()
