@@ -29,6 +29,7 @@ class MyClient(discord.Client):
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
+sd = SDWebAPIHandler()
 
 
 @client.event
@@ -42,13 +43,86 @@ async def hello(interaction: discord.Interaction):
 
 
 @client.tree.command()
+async def get_config(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=False)
+    response = await sd.get_config()
+    embed = discord.Embed(color=discord.Color.green())
+    embed.add_field(
+        name="sd_model_checkpoint", value=response["sd_model_checkpoint"], inline=False
+    )
+    embed.add_field(name="sd_vae", value=response["sd_vae"], inline=False)
+    await interaction.followup.send(embed=embed)
+
+
+@client.tree.command()
+async def get_models(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=False)
+    response = await sd.sd_models()
+    embed = discord.Embed(title="SD Models", color=discord.Color.green())
+    for i, v in enumerate(response):
+        embed.add_field(
+            name=f"{i}:",
+            value=v["title"],
+            inline=False,
+        )
+    await interaction.followup.send(embed=embed)
+
+
+@client.tree.command()
+async def get_vae(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=False)
+    response = await sd.sd_vae()
+    embed = discord.Embed(title="SD VAE", color=discord.Color.green())
+    for i, v in enumerate(response):
+        embed.add_field(
+            name=f"{i}:",
+            value=v["model_name"],
+            inline=False,
+        )
+    await interaction.followup.send(embed=embed)
+
+
+@client.tree.command()
+@app_commands.describe(
+    model="model [hash]",
+)
+async def set_model(interaction: discord.Interaction, model: str):
+    await interaction.response.defer(ephemeral=False)
+    params = {"sd_model_checkpoint": model}
+    response = await sd.set_config(params)
+    embed = discord.Embed(title="Set Model", color=discord.Color.green())
+    embed.add_field(
+        name="Result",
+        value=response,
+        inline=False,
+    )
+    await interaction.followup.send(embed=embed)
+
+
+@client.tree.command()
+@app_commands.describe(
+    vae="vae",
+)
+async def set_vae(interaction: discord.Interaction, vae: str):
+    await interaction.response.defer(ephemeral=False)
+    params = {"sd_vae": vae}
+    response = await sd.set_config(params)
+    embed = discord.Embed(title="Set VAE", color=discord.Color.green())
+    embed.add_field(
+        name="Result",
+        value=response,
+        inline=False,
+    )
+    await interaction.followup.send(embed=embed)
+
+
+@client.tree.command()
 @app_commands.describe(
     prompt="image prompt",
 )
 async def txt2img(interaction: discord.Interaction, prompt: str):
     await interaction.response.defer(ephemeral=False)
 
-    sd = SDWebAPIHandler()
     response = await sd.txt2img(prompt=prompt)
     generated_images = []
     for img in response["images"]:
