@@ -27,7 +27,7 @@ class SDWebAPIHandler:
         sampler_name="DPM++ 2M Karras",
         batch_size=1,
         steps=20,
-        cfg_scale=7,
+        cfg_scale=7.0,
         width=512,
         height=512,
         restore_faces=False,

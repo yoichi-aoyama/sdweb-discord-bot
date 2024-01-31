@@ -118,12 +118,26 @@ async def set_vae(interaction: discord.Interaction, vae: str):
 
 @client.tree.command()
 @app_commands.describe(
-    prompt="image prompt",
+    prompt="Prompt: Default (None)",
+    negative_prompt="Negative Prompt: Default (EasyNegative2)",
+    steps="Setps: Default (20)",
+    cfg_scale="CFG Scale: Default (7.0)",
 )
-async def txt2img(interaction: discord.Interaction, prompt: str):
+async def txt2img(
+    interaction: discord.Interaction,
+    prompt: str,
+    negative_prompt: str = "EasyNegative2",
+    steps: int = 20,
+    cfg_scale: float = 7.0,
+):
     await interaction.response.defer(ephemeral=False)
 
-    response = await sd.txt2img(prompt=prompt)
+    response = await sd.txt2img(
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        steps=steps,
+        cfg_scale=cfg_scale,
+    )
     generated_images = []
     for img in response["images"]:
         image = Image.open(BytesIO(b64decode(img)))
@@ -142,6 +156,14 @@ async def txt2img(interaction: discord.Interaction, prompt: str):
     embed = discord.Embed(color=discord.Color.green())
     embed.set_image(url=f"attachment://{files[0].filename}")
     embed.add_field(name="Prompt", value=f"{prompt}")
+    embed.add_field(
+        name="Options",
+        value=f"""
+        negative_prompt: {negative_prompt}
+        steps: {steps}
+        cfg_scale: {cfg_scale}
+        """,
+    )
     await interaction.followup.send(files=files, embed=embed)
 
 
