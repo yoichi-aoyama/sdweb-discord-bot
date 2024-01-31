@@ -41,4 +41,31 @@ async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f"Hello, {interaction.user.mention}")
 
 
+@client.tree.command()
+@app_commands.describe(
+    prompt="image prompt",
+)
+async def txt2img(interaction: discord.Interaction, prompt: str):
+    await interaction.response.defer(ephemeral=False)
+
+    sd = SDWebAPIHandler()
+    response = await sd.txt2img(prompt)
+    generated_images = []
+    for img in response["images"]:
+        image = Image.open(BytesIO(b64decode(img)))
+        pnginfo = PngImagePlugin.PngInfo()
+        png_info_response = await sd.png_info(img)
+        info_text = png_info_response.get("info")
+        pnginfo.add_text("parameters", info_text)
+        tmp_filename = f"{uuid.uuid4()}.png"
+        generated_images.append(tmp_filename)
+        image.save(tmp_filename, pnginfo=pnginfo)
+    payload = []
+    for img in generated_images:
+        with open(img, "rb") as f:
+            payload.append(discord.File(f))
+        os.remove(img)
+    await interaction.followup.send(f"{prompt}", files=payload)
+
+
 client.run(DISCORD_BOT_TOKEN)
