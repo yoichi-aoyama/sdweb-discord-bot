@@ -1,28 +1,26 @@
+import asyncio
 from urllib.parse import urljoin
 
-import requests
+import aiohttp
 
 
 class SDWebAPIHandler:
     def __init__(self):
         self.base_url = "http://127.0.0.1:7860/"
 
-    def _make_get_request(self, endpoint, params):
+    async def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
-        response = requests.get(url, params=params)
-        return response.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, params=params) as response:
+                return await response.json()
 
-    def _make_post_request(self, endpoint, params):
+    async def _make_post_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
-        response = requests.post(url, json=params)
-        return response.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=params) as response:
+                return await response.json()
 
-    def queue_status(self):
-        endpoint = "/queue/status"
-        params = {}
-        return self._make_get_request(endpoint, params)
-
-    def txt2img(
+    async def txt2img(
         self,
         prompt,
         negative_prompt="EasyNegative2",
@@ -52,9 +50,21 @@ class SDWebAPIHandler:
             "hr_scale": hr_scale,
             "hr_upscaler": hr_upscaler,
         }
-        return self._make_post_request(endpoint, params)
+        return await self._make_post_request(endpoint, params)
 
-    def png_info(self, image):
+    async def png_info(self, image):
         endpoint = "/sdapi/v1/png-info"
         params = {"image": f"data:image/png;base64,{image}"}
-        return self._make_post_request(endpoint, params)
+        return await self._make_post_request(endpoint, params)
+
+
+async def main():
+    sd = SDWebAPIHandler()
+    response = await sd.txt2img("HELLO")
+    for image in response["images"]:
+        png = await sd.png_info(image)
+        print(png)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
