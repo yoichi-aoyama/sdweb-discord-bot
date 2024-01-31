@@ -49,7 +49,7 @@ async def txt2img(interaction: discord.Interaction, prompt: str):
     await interaction.response.defer(ephemeral=False)
 
     sd = SDWebAPIHandler()
-    response = await sd.txt2img(prompt)
+    response = await sd.txt2img(prompt=prompt)
     generated_images = []
     for img in response["images"]:
         image = Image.open(BytesIO(b64decode(img)))
@@ -60,12 +60,15 @@ async def txt2img(interaction: discord.Interaction, prompt: str):
         tmp_filename = f"{uuid.uuid4()}.png"
         generated_images.append(tmp_filename)
         image.save(tmp_filename, pnginfo=pnginfo)
-    payload = []
+
+    files = [discord.File(path, filename=path) for path in generated_images]
     for img in generated_images:
-        with open(img, "rb") as f:
-            payload.append(discord.File(f))
         os.remove(img)
-    await interaction.followup.send(f"{prompt}", files=payload)
+
+    embed = discord.Embed(color=discord.Color.green())
+    embed.set_image(url=f"attachment://{files[0].filename}")
+    embed.add_field(name="Prompt", value=f"{prompt}")
+    await interaction.followup.send(files=files, embed=embed)
 
 
 client.run(DISCORD_BOT_TOKEN)
