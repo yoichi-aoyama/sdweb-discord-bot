@@ -11,7 +11,7 @@ class SDWebAPIHandler:
     async def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, params=params) as response:
+            async with session.get(url, params=params) as response:
                 return await response.json()
 
     async def _make_post_request(self, endpoint, params):
@@ -57,13 +57,30 @@ class SDWebAPIHandler:
         params = {"image": f"data:image/png;base64,{image}"}
         return await self._make_post_request(endpoint, params)
 
+    async def sd_models(self):
+        endpoint = "/sdapi/v1/sd-models"
+        params = {}
+        return await self._make_get_request(endpoint, params)
+
+    async def sd_vae(self):
+        endpoint = "/sdapi/v1/sd-vae"
+        params = {}
+        return await self._make_get_request(endpoint, params)
+
+    async def get_config(self):
+        endpoint = "/sdapi/v1/options"
+        params = {}
+        return await self._make_get_request(endpoint, params)
+
+    async def set_config(self, params):
+        endpoint = "/sdapi/v1/options"
+        return await self._make_post_request(endpoint, params)
+
 
 async def main():
     sd = SDWebAPIHandler()
-    response = await sd.txt2img("HELLO")
-    for image in response["images"]:
-        png = await sd.png_info(image)
-        print(png)
+    res = await sd.sd_vae()
+    print(res)
 
 
 if __name__ == "__main__":
