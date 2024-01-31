@@ -122,6 +122,8 @@ async def set_vae(interaction: discord.Interaction, vae: str):
     negative_prompt="Negative Prompt: Default (EasyNegative2)",
     steps="Setps: Default (20)",
     cfg_scale="CFG Scale: Default (7.0)",
+    width="Width: Default (512)",
+    height="Height: Default (512)",
 )
 async def txt2img(
     interaction: discord.Interaction,
@@ -129,6 +131,8 @@ async def txt2img(
     negative_prompt: str = "EasyNegative2",
     steps: int = 20,
     cfg_scale: float = 7.0,
+    width: int = 512,
+    height: int = 512,
 ):
     await interaction.response.defer(ephemeral=False)
 
@@ -137,6 +141,8 @@ async def txt2img(
         negative_prompt=negative_prompt,
         steps=steps,
         cfg_scale=cfg_scale,
+        width=width,
+        height=height,
     )
     generated_images = []
     for img in response["images"]:
@@ -159,6 +165,7 @@ async def txt2img(
     embed.add_field(
         name="Options",
         value=f"""
+        resolution: {width}x{height}
         negative_prompt: {negative_prompt}
         steps: {steps}
         cfg_scale: {cfg_scale}
