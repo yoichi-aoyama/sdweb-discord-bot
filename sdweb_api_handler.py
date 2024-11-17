@@ -6,7 +6,7 @@ import aiohttp
 
 class SDWebAPIHandler:
     def __init__(self):
-        self.base_url = "http://127.0.0.1:7860/"
+        self.base_url = "http://127.0.0.1:8000/"
 
     async def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
@@ -35,7 +35,7 @@ class SDWebAPIHandler:
         hr_scale=1.5,
         hr_upscaler="SwinIR 4x",
     ):
-        endpoint = "/sdapi/v1/txt2img"
+        endpoint = "/api/generate"
         params = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
@@ -58,7 +58,7 @@ class SDWebAPIHandler:
         return await self._make_post_request(endpoint, params)
 
     async def sd_models(self):
-        endpoint = "/sdapi/v1/sd-models"
+        endpoint = "/api/models"
         params = {}
         return await self._make_get_request(endpoint, params)
 
@@ -68,7 +68,7 @@ class SDWebAPIHandler:
         return await self._make_get_request(endpoint, params)
 
     async def get_config(self):
-        endpoint = "/sdapi/v1/options"
+        endpoint = "/api/config"
         params = {}
         return await self._make_get_request(endpoint, params)
 

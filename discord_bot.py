@@ -46,6 +46,8 @@ async def hello(interaction: discord.Interaction):
 async def get_config(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     response = await sd.get_config()
+    print(response)
+    print(response["detail"])
     embed = discord.Embed(color=discord.Color.green())
     embed.add_field(
         name="sd_model_checkpoint", value=response["sd_model_checkpoint"], inline=False
@@ -58,6 +60,8 @@ async def get_config(interaction: discord.Interaction):
 async def get_models(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     response = await sd.sd_models()
+    print(response)
+
     embed = discord.Embed(title="SD Models", color=discord.Color.green())
     for i, v in enumerate(response):
         embed.add_field(
