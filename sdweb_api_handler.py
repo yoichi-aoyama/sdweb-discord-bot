@@ -9,14 +9,18 @@ class SDWebAPIHandler:
         self.base_url = "http://127.0.0.1:7860/"
 
     async def _make_get_request(self, endpoint, params):
+        print('get_request')
         url = urljoin(self.base_url, endpoint)
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=36000)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url, params=params) as response:
                 return await response.json()
 
     async def _make_post_request(self, endpoint, params):
+        print('post_request')
         url = urljoin(self.base_url, endpoint)
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=36000)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(url, json=params) as response:
                 return await response.json()
 
