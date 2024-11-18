@@ -156,8 +156,8 @@ async def txt2img(
         image.save(tmp_filename, pnginfo=pnginfo)
 
     files = [discord.File(path, filename=path) for path in generated_images]
-    for img in generated_images:
-        os.remove(img)
+    # for img in generated_images:
+    #     os.remove(img)
 
     embed = discord.Embed(color=discord.Color.green())
     embed.set_image(url=f"attachment://{files[0].filename}")
