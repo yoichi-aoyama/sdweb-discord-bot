@@ -46,11 +46,13 @@ async def hello(interaction: discord.Interaction):
 async def get_config(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     response = await sd.get_config()
+    print(response)
+    print(response["lcm_diffusion_setting"]["lcm_model_id"])
     embed = discord.Embed(color=discord.Color.green())
     embed.add_field(
-        name="sd_model_checkpoint", value=response["sd_model_checkpoint"], inline=False
+        name="lcm_model_id", value=response["lcm_diffusion_setting"]["lcm_model_id"], inline=False
     )
-    embed.add_field(name="sd_vae", value=response["sd_vae"], inline=False)
+    embed.add_field(name="generated_images", value=response["generated_images"]["path"], inline=False)
     await interaction.followup.send(embed=embed)
 
 
@@ -58,13 +60,17 @@ async def get_config(interaction: discord.Interaction):
 async def get_models(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False)
     response = await sd.sd_models()
+    print(response)
+
     embed = discord.Embed(title="SD Models", color=discord.Color.green())
-    for i, v in enumerate(response):
-        embed.add_field(
-            name=f"{i}:",
-            value=v["title"],
-            inline=False,
-        )
+    #for i, v in enumerate(response):
+    #    print(i)
+    #    print(v)
+    #    for vv in response[v]:
+    #        print(vv)
+    #        embed.add_field( name=v, value=vv, inline=False)
+    for vv in response["openvino_models"]:
+        embed.add_field( name="openvino_models", value=vv, inline=False)
     await interaction.followup.send(embed=embed)
 
 
@@ -148,16 +154,16 @@ async def txt2img(
     for img in response["images"]:
         image = Image.open(BytesIO(b64decode(img)))
         pnginfo = PngImagePlugin.PngInfo()
-        png_info_response = await sd.png_info(img)
-        info_text = png_info_response.get("info")
-        pnginfo.add_text("parameters", info_text)
+        #png_info_response = await sd.png_info(img)
+        #info_text = png_info_response.get("info")
+        #pnginfo.add_text("parameters", info_text)
         tmp_filename = f"{uuid.uuid4()}.png"
         generated_images.append(tmp_filename)
         image.save(tmp_filename, pnginfo=pnginfo)
 
     files = [discord.File(path, filename=path) for path in generated_images]
-    for img in generated_images:
-        os.remove(img)
+    #for img in generated_images:
+    #    os.remove(img)
 
     embed = discord.Embed(color=discord.Color.green())
     embed.set_image(url=f"attachment://{files[0].filename}")

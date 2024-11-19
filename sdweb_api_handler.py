@@ -6,7 +6,7 @@ import aiohttp
 
 class SDWebAPIHandler:
     def __init__(self):
-        self.base_url = "http://127.0.0.1:7860/"
+        self.base_url = "http://127.0.0.1:8000/"
 
     async def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
@@ -33,9 +33,11 @@ class SDWebAPIHandler:
         restore_faces=False,
         enable_hr=False,  # FIXME: If True, an error occurs
         hr_scale=1.5,
+        lcm_model_id="stabilityai/sd-turbo",
+        openvino_lcm_model_id="rupeshs/sd-turbo-openvino",
         hr_upscaler="SwinIR 4x",
     ):
-        endpoint = "/sdapi/v1/txt2img"
+        endpoint = "/api/generate"
         params = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
@@ -43,12 +45,14 @@ class SDWebAPIHandler:
             "batch_size": batch_size,
             "steps": steps,
             "cfg_scale": cfg_scale,
-            "width": width,
-            "height": height,
+            "image_width": width,
+            "image_height": height,
             "restore_faces": restore_faces,
-            "enable_hr": enable_hr,
-            "hr_scale": hr_scale,
-            "hr_upscaler": hr_upscaler,
+            #"enable_hr": enable_hr,
+            #"hr_scale": hr_scale,
+            #"hr_upscaler": hr_upscaler,
+            "lcm_model_id": lcm_model_id,
+            "openvino_lcm_model_id": openvino_lcm_model_id,
         }
         return await self._make_post_request(endpoint, params)
 
@@ -58,7 +62,7 @@ class SDWebAPIHandler:
         return await self._make_post_request(endpoint, params)
 
     async def sd_models(self):
-        endpoint = "/sdapi/v1/sd-models"
+        endpoint = "/api/models"
         params = {}
         return await self._make_get_request(endpoint, params)
 
@@ -68,12 +72,15 @@ class SDWebAPIHandler:
         return await self._make_get_request(endpoint, params)
 
     async def get_config(self):
-        endpoint = "/sdapi/v1/options"
+        endpoint = "/api/config"
         params = {}
         return await self._make_get_request(endpoint, params)
 
     async def set_config(self, params):
         endpoint = "/sdapi/v1/options"
+        return await self._make_post_request(endpoint, params)
+    async def info(self, params):
+        endpoint = "/api/info"
         return await self._make_post_request(endpoint, params)
 
 
