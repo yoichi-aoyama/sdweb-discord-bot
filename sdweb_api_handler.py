@@ -10,13 +10,15 @@ class SDWebAPIHandler:
 
     async def _make_get_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=36000)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url, params=params) as response:
                 return await response.json()
 
     async def _make_post_request(self, endpoint, params):
         url = urljoin(self.base_url, endpoint)
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=36000)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(url, json=params) as response:
                 return await response.json()
 
@@ -56,6 +58,44 @@ class SDWebAPIHandler:
         }
         return await self._make_post_request(endpoint, params)
 
+
+    async def txt2imglora(
+        self,
+        prompt,
+        negative_prompt="EasyNegative2",
+        sampler_name="DPM++ 2M Karras",
+        batch_size=1,
+        steps=20,
+        cfg_scale=7.0,
+        width=512,
+        height=512,
+        restore_faces=False,
+        enable_hr=False,  # FIXME: If True, an error occurs
+        hr_scale=1.5,
+        lcm_model_id="SimianLuo/LCM_Dreamshaper_v7",
+        #openvino_lcm_model_id="rupeshs/sd-turbo-openvino",
+        hr_upscaler="SwinIR 4x",
+    ):
+        endpoint = "/api/generate"
+        params = {
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "sampler_name": sampler_name,
+            "batch_size": batch_size,
+            "steps": steps,
+            "cfg_scale": cfg_scale,
+            "image_width": width,
+            "image_height": height,
+            "restore_faces": restore_faces,
+            #"enable_hr": enable_hr,
+            #"hr_scale": hr_scale,
+            #"hr_upscaler": hr_upscaler,
+            "lcm_model_id": lcm_model_id,
+            "lcm_lora": { 'base_model_id': 'Lykon/dreamshaper-8',
+              'lcm_lora_id': 'latent-consistency/lcm-lora-sdv1-5'},
+            "use_openvino": True,
+        }
+        return await self._make_post_request(endpoint, params)
     async def png_info(self, image):
         endpoint = "/sdapi/v1/png-info"
         params = {"image": f"data:image/png;base64,{image}"}

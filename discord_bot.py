@@ -179,5 +179,58 @@ async def txt2img(
     )
     await interaction.followup.send(files=files, embed=embed)
 
+@client.tree.command()
+@app_commands.describe(
+    prompt="Prompt: Default (None)",
+    negative_prompt="Negative Prompt: Default (EasyNegative2)",
+    steps="Setps: Default (20)",
+    cfg_scale="CFG Scale: Default (7.0)",
+    width="Width: Default (512)",
+    height="Height: Default (512)",
+)
+async def txt2imglora(
+    interaction: discord.Interaction,
+    prompt: str,
+    negative_prompt: str = "EasyNegative2",
+    steps: int = 20,
+    cfg_scale: float = 7.0,
+    width: int = 512,
+    height: int = 512,
+):
+    await interaction.response.defer(ephemeral=False)
+
+    response = await sd.txt2imglora(
+        prompt=prompt,
+        negative_prompt=negative_prompt,
+        steps=steps,
+        cfg_scale=cfg_scale,
+        width=width,
+        height=height,
+    )
+    generated_images = []
+    for img in response["images"]:
+        image = Image.open(BytesIO(b64decode(img)))
+        pnginfo = PngImagePlugin.PngInfo()
+        tmp_filename = f"{uuid.uuid4()}.png"
+        generated_images.append(tmp_filename)
+        image.save(tmp_filename, pnginfo=pnginfo)
+
+    files = [discord.File(path, filename=path) for path in generated_images]
+    #for img in generated_images:
+    #    os.remove(img)
+
+    embed = discord.Embed(color=discord.Color.green())
+    embed.set_image(url=f"attachment://{files[0].filename}")
+    embed.add_field(name="Prompt", value=f"{prompt}")
+    embed.add_field(
+        name="Options",
+        value=f"""
+        resolution: {width}x{height}
+        negative_prompt: {negative_prompt}
+        steps: {steps}
+        cfg_scale: {cfg_scale}
+        """,
+    )
+    await interaction.followup.send(files=files, embed=embed)
 
 client.run(DISCORD_BOT_TOKEN)
